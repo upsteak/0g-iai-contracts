@@ -38,8 +38,14 @@ swept to the foundation. The split is a governance parameter — currently **50/
 The marginal price rises exponentially in the supply:
 
 ```
-rate(s) = base · e^(exponent · s / target)        0G per iAI
+rate(s) = base · e^(exponent · (s / target)^power)        0G per iAI
 ```
+
+`power` 1 is the pure exponential; above 1 the price stays near `base` for longer and climbs
+harder towards `target`. `power` is a parameter of the table generator and of the deployment
+record only: the contract records `base`, `exponent` and `target` as provenance and has no field
+for it, so a curve with any other `power` is described completely by its record, not by its
+constructor arguments.
 
 There is no `exp` on chain and the vault charges a step function anyway, so the contract holds a
 **table**: supply is cut into buckets of 25 iAI, each priced flat at the value the formula takes at
@@ -69,6 +75,17 @@ partly issuable. With the shipped parameters:
 | 0G locked by the first 2,000 iAI | 2,046,100 0G |
 | 0G locked at the ceiling, 9,270 iAI | 127,838,783 0G (the smooth integral is 127.03M) |
 | step between adjacent buckets | 1.28%, everywhere — a pure exponential rises by a constant factor per bucket |
+
+Those are the parameters in `iai-example.json`, which the unit tests pin. **Mainnet (16661) is
+priced by a different set**, in `deployments/iai-16661.json`: `base` 1,181.5, `exponent` 5.016,
+`power` 3.274, `target` and `top` 9,270 iAI, 25 iAI buckets. On that curve the first bucket is
+1,181.50 0G, the bucket after a 2,000 iAI pre-mint is 1,222.93 (the smooth curve says 1,221.25),
+the pre-mint itself locks 2,381,968 0G, the last bucket is 179,764.57 (178,178 on the smooth
+curve at 9,270 iAI), and the whole table locks 129,259,106 0G against a smooth integral of
+127.01M. The step between buckets is no longer constant: effectively zero near the origin, 0.14% at the
+2,000 iAI pre-mint, 4.5% at the top,
+which is where pricing each bucket at its upper bound costs the most -- about 2% over the smooth
+curve across the last 1,270 iAI.
 
 `cost()` is the only pricing primitive. `lockedAt()` floors and exists for charts and reconciliation
 only. `priceAt(i)`, `prices()`, `bucketOf(s)` and `rateAt(s)` expose the table for tooling.

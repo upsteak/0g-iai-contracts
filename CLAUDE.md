@@ -150,7 +150,10 @@ the sweep into an accrual whose result depends on how often someone advances it.
 `LinearMintCurve.target` is not an exception to this, and neither are `ExponentialMintCurve.base`,
 `.exponent` and `.target`. They are `immutable`, so they cannot drift from anything — nothing reads
 them to make a decision, and they enforce nothing. They record how the slope, or the table, was
-derived, which is the only way the published parameters stay readable on chain. (`anchorCap` and
+derived, which is the only way the published parameters stay readable on chain -- except
+`ExponentialMintCurve`'s `Power`, which the generator takes and the contract has no field for: for a
+curve whose `Power` is not 1 the three on-chain fields describe a pure exponential it never followed,
+and the deployment record, not the chain, is what describes the table. (`anchorCap` and
 `top` are different: each is its curve's `maxSafeSupply()`, and so the vault's ceiling while that
 curve is in force. The exponential curve's `top` is a constructor argument that the table must
 cover and may exceed by less than a bucket, so a ceiling need not fall on a bucket edge.)
