@@ -87,10 +87,7 @@ def price_table(
     prices = []
     for i in range(bucket_count(top_wei, width_wei)):
         x = Decimal((i + 1) * width_wei) / target
-        # A power of exactly 1 skips `**`, so the tables recorded before `Power` existed are
-        # reproduced by the same arithmetic that generated them.
-        shaped = x if power_wad == WAD else x**power
-        prices.append(int((base * (k * shaped).exp()).to_integral_value(rounding=ROUND_CEILING)))
+        prices.append(int((base * (k * x**power).exp()).to_integral_value(rounding=ROUND_CEILING)))
     return prices
 
 
@@ -242,6 +239,11 @@ def main() -> None:
     for key, value in params.items():
         if value <= 0:
             sys.exit(f"{key} must be positive")
+    # Refused before anything is written, so a rejected export leaves the record as it was.
+    # The mirror's constants are the constructor's provenance arguments, which have no field for
+    # `Power`; exported with any other value, they would not describe the table beside them.
+    if args.solidity and params["Power"] != WAD:
+        sys.exit(f"cannot write {args.solidity}: the mirror has no Power constant, and this table's Power is not 1")
 
     prices = price_table(
         params["Base"], params["Exponent"], params["Power"], params["Target"], params["BucketWidth"], params["Top"]
@@ -279,10 +281,6 @@ def main() -> None:
         )
 
     if args.solidity:
-        # The mirror's constants are the constructor's provenance arguments, which have no field
-        # for `Power`; exported with any other value, they would not describe the table beside them.
-        if params["Power"] != WAD:
-            sys.exit(f"cannot write {args.solidity}: the mirror has no Power constant, and this table's Power is not 1")
         with open(args.solidity, "w") as f:
             f.write(solidity_library(prices, params, args.record))
         print(f"{args.solidity}: written")

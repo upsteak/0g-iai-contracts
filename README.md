@@ -82,7 +82,8 @@ priced by a different set**, in `deployments/iai-16661.json`: `base` 1,181.5, `e
 1,181.50 0G, the bucket after a 2,000 iAI pre-mint is 1,222.93 (the smooth curve says 1,221.25),
 the pre-mint itself locks 2,381,968 0G, the last bucket is 179,764.57 (178,178 on the smooth
 curve at 9,270 iAI), and the whole table locks 129,259,106 0G against a smooth integral of
-127.01M. The step between buckets is no longer constant: 0.2% near the origin, 4.5% at the top,
+127.01M. The step between buckets is no longer constant: effectively zero near the origin, 0.14% at the
+2,000 iAI pre-mint, 4.5% at the top,
 which is where pricing each bucket at its upper bound costs the most -- about 2% over the smooth
 curve across the last 1,270 iAI.
 
